@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require_relative 'app/remind_bot'
+
+def run(argv)
+  options, args = argv.partition { |x| x.start_with?('-') }
+
+  bot = RemindBot.new
+
+  options.each do |o|
+    if o == '--help'
+      print_help
+      exit
+    else
+      puts "Unknown option: #{o}"
+      exit 1
+    end
+  end
+
+  case args.first
+  when 'login'
+    bot.login(args[1])
+  when 'send'
+    to_user = args[1]
+    text = args[2]
+
+    if to_user !~ /\A[^@]+@[^@]+\z/
+      puts "Invalid handle: #{to_user.inspect}"
+      exit 1
+    end
+
+    bot.send_message(to_user, text)
+  else
+    print_help
+  end
+end
+
+def print_help
+  puts "Usage: #{$PROGRAM_NAME} login mastodon@account"
+  puts "       #{$PROGRAM_NAME} send target@user \"message\""
+  exit 1
+end
+
+run(ARGV)
